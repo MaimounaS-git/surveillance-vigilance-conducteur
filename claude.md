@@ -31,7 +31,8 @@ Le but n'est **pas** de les dépasser, mais de comprendre et reproduire leurs pr
 Ce projet doit rester réaliste pour une personne seuleisd, sans GPU ni moyens industriels.
 
 - ✅ Utiliser MediaPipe (modèle pré-entraîné) pour la détection visage/landmarks — ne jamais réentraîner un détecteur de visage from scratch.
-- ✅ Un seul classifieur ML simple (scikit-learn : régression logistique, SVM, ou Random Forest) entraîné sur des indicateurs tabulaires (EAR, MAR, etc.) — **pas de deep learning (CNN/LSTM/Transformer) sauf demande explicite de l'utilisatrice.**
+- ✅ **Le cœur du mémoire est la comparaison seuil fixe vs seuil personnalisé (calibration)** — c'est la vraie contribution du projet, à évaluer rigoureusement en priorité (retour de l'encadrant, cf. section 4).
+- ✅ Un classifieur ML simple (scikit-learn : régression logistique, SVM, ou Random Forest) est **optionnel / bonus si le temps le permet une fois la comparaison seuil fixe vs personnalisé solidement évaluée** — **pas de deep learning (CNN/LSTM/Transformer) sauf demande explicite de l'utilisatrice.**
 - ❌ Ne pas intégrer YOLO ou de détection d'objets sauf si la fonctionnalité "détection de téléphone/distraction" est explicitement demandée.
 - ❌ Ne pas ajouter de fonctionnalités de la liste "optionnelles" (section 4) sans que ce soit demandé — construire d'abord le cœur du projet.
 - ❌ Ne pas viser un déploiement embarqué réel (véhicule, matériel dédié) — le prototype tourne sur PC/laptop avec webcam.
@@ -70,16 +71,18 @@ Ce projet doit rester réaliste pour une personne seuleisd, sans GPU ni moyens i
 
 ### Importantes (après que le cœur fonctionne)
 
+**Priorité n°1 dans ce groupe : évaluer rigoureusement seuils fixes vs seuils personnalisés** (precision/recall/F1, taux de faux positifs, sur des enregistrements webcam maison) — c'est la vraie contribution du mémoire, à sécuriser avant tout le reste ci-dessous.
+
 - Orientation de la tête (pitch/yaw/roll via landmarks + `cv2.solvePnP`) → détection tête qui tombe / dodeline.
 - Direction du regard (optionnel si le temps le permet).
 - Base de données SQLite : historique multi-sessions.
 - Tableau de bord Streamlit avec vue temps réel + vue historique.
 - Recommandations textuelles contextuelles ("Une pause est recommandée").
 - Export CSV d'une session.
-- Classifieur ML (scikit-learn) entraîné sur indicateurs extraits d'un dataset public, comparé au seuillage à seuils fixes/personnalisés.
 
-### Optionnelles (ne pas construire sans demande explicite)
+### Optionnelles / bonus (ne pas construire sans demande explicite, ou seulement si le temps le permet en fin de projet)
 
+- **Classifieur ML (scikit-learn) entraîné sur indicateurs extraits d'un dataset public, comparé au seuillage à seuils fixes/personnalisés — décision de l'encadrant (2026-07-19) : scope de L3 trop large pour inclure ceci comme indispensable, devient un bonus, pas une priorité.**
 - Détection de distraction (téléphone) via YOLO pré-entraîné.
 - Calibration continue (mise à jour glissante des seuils pendant la session).
 - Mode nuit (adaptation luminosité).
@@ -211,7 +214,9 @@ Adapter librement selon les besoins, mais garder une séparation claire session 
 
 ---
 
-## 10. Machine Learning (classifieur)
+## 10. Machine Learning (classifieur) — BONUS, pas indispensable
+
+**Retour de l'encadrant (2026-07-19) : le scope initial (seuils fixes + seuils personnalisés + ML + validation croisée + tests de robustesse + démo live) est trop large pour un mémoire de L3.** Le classifieur ML devient une fonctionnalité bonus, à construire seulement une fois que la comparaison seuil fixe vs seuil personnalisé est solidement évaluée (c'est elle la vraie contribution du mémoire). Ne pas commencer cette section avant que le cœur ci-dessus soit terminé et démontrable.
 
 - Modèle : régression logistique, SVM, ou Random Forest (scikit-learn) — comparer 2-3 modèles simples, pas plus.
 - Features d'entrée : EAR, MAR, fréquence de clignement, éventuellement angle de tête — features tabulaires calculées, pas d'image brute en entrée.
@@ -220,13 +225,17 @@ Adapter librement selon les besoins, mais garder une séparation claire session 
 
 ---
 
-## 11. Datasets publics à utiliser pour l'évaluation/entraînement
+## 11. Datasets publics à utiliser pour l'évaluation/entraînement — priorité BASSE désormais
 
-| Dataset                                                         | Usage                                                                                        |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| NTHU-DDD                                                        | Test du pipeline (landmarks) en conditions variées (lunettes, nuit) + extraction d'exemples |
-| YawDD                                                           | Complète pour la détection de bâillements                                                 |
-| UTA-RLDD / dataset dérivé "DDD" (images yeux ouverts/fermés) | Entraînement rapide du classifieur ML                                                       |
+**Cette section devient secondaire suite à la réduction de scope (section 4/10) : le cœur du mémoire (seuil fixe vs personnalisé) s'évalue avec des enregistrements webcam maison, pas avec ces datasets.** Ils ne redeviennent utiles que si le classifieur ML bonus est effectivement construit, ou pour tester la robustesse du pipeline sur des visages/conditions variés.
+
+| Dataset                                                         | Usage                                                                                        | Accès (vérifié 2026-07-19)                                                                 |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| NTHU-DDD                                                        | Test du pipeline (landmarks) en conditions variées (lunettes, nuit) + extraction d'exemples | ⚠️ Nécessite de remplir un *Dataset License Agreement* et de l'envoyer par email au NTHU CVLab (page officielle : cv.cs.nthu.edu.tw/php/callforpaper/datasets/DDD/). Délai de réponse incertain (potentiellement plusieurs semaines) — **si utilisé, lancer la demande immédiatement.** |
+| YawDD                                                           | Complète pour la détection de bâillements                                                 | Généralement soumis à une procédure de demande similaire (email aux auteurs) — à vérifier au cas par cas si retenu. |
+| UTA-RLDD / dataset dérivé "DDD" (images yeux ouverts/fermés) | Entraînement rapide du classifieur ML                                                       | Semble plus directement accessible : page officielle sites.google.com/view/utarldd/home, également disponible via des miroirs Kaggle. Vérifier la licence exacte avant usage dans le mémoire. |
+
+**Recommandation** : ne pas bloquer l'avancement du cœur du projet sur ces demandes d'accès. Si le classifieur ML bonus est envisagé plus tard, lancer la demande NTHU-DDD dès que possible en parallèle (délai long), et privilégier UTA-RLDD (accès plus rapide) en attendant.
 
 Pour la démo devant jury : utiliser une vidéo de l'utilisatrice elle-même (webcam), pas une vidéo tierce trouvée sur internet (problèmes de droits + absence de vérité terrain).
 
