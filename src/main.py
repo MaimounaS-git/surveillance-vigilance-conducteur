@@ -12,6 +12,7 @@ from calibration import calibrer
 from capture import Webcam
 from clignement import CompteurClignements
 from decision import Decision, NIVEAU_ALERTE, NIVEAU_ATTENTION
+from historique import HistoriqueSession
 from indicateurs import calculer_ear, calculer_mar
 from landmarks import DetecteurLandmarks
 from scoring import ScoreVigilance
@@ -61,6 +62,7 @@ def main():
     score_vigilance = ScoreVigilance()
     decision = Decision()
     gestionnaire_alertes = GestionnaireAlertes()
+    historique = HistoriqueSession()
 
     temps_precedent = time.time()
 
@@ -88,6 +90,7 @@ def main():
                 yeux_fermes = ear < baseline.seuil_fermeture_yeux
                 niveau, microsommeil = decision.determiner_niveau(yeux_fermes, score)
                 message_recommandation = gestionnaire_alertes.traiter(niveau)
+                historique.enregistrer(ear, mar, score)
 
             # Calcul du FPS pour valider la stabilité du pipeline avant le bloc suivant
             temps_actuel = time.time()
@@ -150,6 +153,8 @@ def main():
         webcam.fermer()
         detecteur.fermer()
         cv2.destroyAllWindows()
+
+    historique.afficher_courbes()
 
 
 if __name__ == "__main__":
