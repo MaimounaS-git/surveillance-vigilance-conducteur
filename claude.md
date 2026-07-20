@@ -225,17 +225,17 @@ Adapter librement selon les besoins, mais garder une séparation claire session 
 
 ---
 
-## 11. Datasets publics à utiliser pour l'évaluation/entraînement — priorité BASSE désormais
+## 11. Dataset public — priorité BASSE désormais
 
-**Cette section devient secondaire suite à la réduction de scope (section 4/10) : le cœur du mémoire (seuil fixe vs personnalisé) s'évalue avec des enregistrements webcam maison, pas avec ces datasets.** Ils ne redeviennent utiles que si le classifieur ML bonus est effectivement construit, ou pour tester la robustesse du pipeline sur des visages/conditions variés.
+**Cette section devient secondaire suite à la réduction de scope (section 4/10) : le cœur du mémoire (seuil fixe vs personnalisé) s'évalue avec des enregistrements webcam maison, pas avec un dataset externe.** Un dataset ne redevient utile que si le classifieur ML bonus est effectivement construit.
 
-| Dataset                                                         | Usage                                                                                        | Accès (vérifié 2026-07-19)                                                                 |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| NTHU-DDD                                                        | Test du pipeline (landmarks) en conditions variées (lunettes, nuit) + extraction d'exemples | ⚠️ Nécessite de remplir un *Dataset License Agreement* et de l'envoyer par email au NTHU CVLab (page officielle : cv.cs.nthu.edu.tw/php/callforpaper/datasets/DDD/). Délai de réponse incertain (potentiellement plusieurs semaines) — **si utilisé, lancer la demande immédiatement.** |
-| YawDD                                                           | Complète pour la détection de bâillements                                                 | Généralement soumis à une procédure de demande similaire (email aux auteurs) — à vérifier au cas par cas si retenu. |
-| UTA-RLDD / dataset dérivé "DDD" (images yeux ouverts/fermés) | Entraînement rapide du classifieur ML                                                       | Semble plus directement accessible : page officielle sites.google.com/view/utarldd/home, également disponible via des miroirs Kaggle. Vérifier la licence exacte avant usage dans le mémoire. |
+**Décision (2026-07-19) : NTHU-DDD et YawDD sont abandonnés** — accès soumis à un formulaire d'autorisation envoyé par email au laboratoire, délai de réponse incertain (potentiellement plusieurs semaines), incompatible avec le besoin de ne pas attendre.
 
-**Recommandation** : ne pas bloquer l'avancement du cœur du projet sur ces demandes d'accès. Si le classifieur ML bonus est envisagé plus tard, lancer la demande NTHU-DDD dès que possible en parallèle (délai long), et privilégier UTA-RLDD (accès plus rapide) en attendant.
+**Dataset retenu : MRL Eye Dataset** — images d'yeux ouverts/fermés (~85 000 images), dataset académique établi (Fusek, 2018), librement téléchargeable sans demande d'autorisation ni délai, disponible sur son site officiel (mrl.cs.vsb.cz/eyedataset) et via des miroirs Kaggle.
+
+- **Usage** : entraînement/validation du classifieur ML bonus (classification œil ouvert/fermé, à relier à l'EAR calculé par le pipeline), et test de la robustesse de la détection de fermeture d'yeux.
+- **Limite à documenter honnêtement dans le mémoire** : ce sont des images fixes d'yeux, pas des vidéos de conduite complètes — pas de labels bâillement (MAR), pas de séquences temporelles, pas de scénario de conduite réaliste. Insuffisant pour tester la détection de bâillements ou l'orientation de la tête ; largement suffisant pour le volet "fermeture des yeux" du classifieur bonus.
+- Vérifier la licence exacte sur la page Kaggle/officielle avant citation dans le mémoire.
 
 Pour la démo devant jury : utiliser une vidéo de l'utilisatrice elle-même (webcam), pas une vidéo tierce trouvée sur internet (problèmes de droits + absence de vérité terrain).
 
