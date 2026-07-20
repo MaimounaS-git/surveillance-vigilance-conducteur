@@ -10,8 +10,8 @@ import mediapipe as mp
 # Ordre par oeil : [coin gauche, haut1, haut2, coin droit, bas1, bas2]
 LANDMARKS_OEIL_GAUCHE = [362, 385, 387, 263, 373, 380]
 LANDMARKS_OEIL_DROIT = [33, 160, 158, 133, 153, 144]
-# Bouche : [coin gauche, coin droit, haut1, bas1, haut2, bas2]
-LANDMARKS_BOUCHE = [61, 291, 39, 181, 0, 17]
+# Bouche, même ordre que les yeux : [coin gauche, haut1, haut2, coin droit, bas1, bas2]
+LANDMARKS_BOUCHE = [61, 39, 0, 291, 181, 17]
 
 
 class DetecteurLandmarks:

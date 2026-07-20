@@ -8,6 +8,7 @@ import time
 import cv2
 
 from capture import Webcam
+from indicateurs import calculer_ear, calculer_mar
 from landmarks import DetecteurLandmarks
 
 
@@ -38,8 +39,12 @@ def main():
             landmarks = detecteur.detecter(frame)
 
             visage_detecte = landmarks is not None
+            ear, mar = 0.0, 0.0
             if visage_detecte:
                 dessiner_landmarks(frame, landmarks)
+                hauteur, largeur, _ = frame.shape
+                ear = calculer_ear(landmarks, largeur, hauteur)
+                mar = calculer_mar(landmarks, largeur, hauteur)
 
             # Calcul du FPS pour valider la stabilité du pipeline avant le bloc suivant
             temps_actuel = time.time()
@@ -50,6 +55,12 @@ def main():
             statut = "Visage detecte" if visage_detecte else "Aucun visage"
             texte = f"{statut} | FPS: {fps:.1f}"
             cv2.putText(frame, texte, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            if visage_detecte:
+                texte_indicateurs = f"EAR: {ear:.3f} | MAR: {mar:.3f}"
+                cv2.putText(
+                    frame, texte_indicateurs, (10, 60),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2,
+                )
 
             cv2.imshow("Surveillance de la vigilance - landmarks", frame)
 
