@@ -7,6 +7,7 @@ import time
 
 import cv2
 
+from alertes import GestionnaireAlertes
 from calibration import calibrer
 from capture import Webcam
 from clignement import CompteurClignements
@@ -59,6 +60,7 @@ def main():
     compteur_clignements = CompteurClignements(seuil_ear=baseline.seuil_fermeture_yeux)
     score_vigilance = ScoreVigilance()
     decision = Decision()
+    gestionnaire_alertes = GestionnaireAlertes()
 
     temps_precedent = time.time()
 
@@ -85,6 +87,7 @@ def main():
                 )
                 yeux_fermes = ear < baseline.seuil_fermeture_yeux
                 niveau, microsommeil = decision.determiner_niveau(yeux_fermes, score)
+                message_recommandation = gestionnaire_alertes.traiter(niveau)
 
             # Calcul du FPS pour valider la stabilité du pipeline avant le bloc suivant
             temps_actuel = time.time()
@@ -131,6 +134,11 @@ def main():
                     cv2.putText(
                         frame, "MICROSOMMEIL DETECTE (yeux fermes > 500ms)", (10, 225),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2,
+                    )
+                if message_recommandation:
+                    cv2.putText(
+                        frame, message_recommandation, (10, 260),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, couleur_niveau(niveau), 2,
                     )
 
             cv2.imshow("Surveillance de la vigilance - landmarks", frame)
