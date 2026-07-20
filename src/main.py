@@ -12,6 +12,16 @@ from capture import Webcam
 from clignement import CompteurClignements
 from indicateurs import calculer_ear, calculer_mar
 from landmarks import DetecteurLandmarks
+from scoring import ScoreVigilance
+
+
+def couleur_score(score):
+    """Vert si vigilance correcte, orange si attention, rouge si alerte."""
+    if score >= 70:
+        return (0, 255, 0)
+    if score >= 40:
+        return (0, 165, 255)
+    return (0, 0, 255)
 
 
 def dessiner_landmarks(frame, landmarks):
@@ -37,6 +47,7 @@ def main():
     )
 
     compteur_clignements = CompteurClignements(seuil_ear=baseline.seuil_fermeture_yeux)
+    score_vigilance = ScoreVigilance()
 
     temps_precedent = time.time()
 
@@ -58,6 +69,9 @@ def main():
                 ear = calculer_ear(landmarks, largeur, hauteur)
                 mar = calculer_mar(landmarks, largeur, hauteur)
                 compteur_clignements.mettre_a_jour(ear)
+                score, perclos = score_vigilance.calculer_score(
+                    ear, mar, compteur_clignements.frequence_par_minute(), baseline
+                )
 
             # Calcul du FPS pour valider la stabilité du pipeline avant le bloc suivant
             temps_actuel = time.time()
@@ -89,6 +103,11 @@ def main():
                 cv2.putText(
                     frame, texte_seuils, (10, 120),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2,
+                )
+                texte_score = f"Score de vigilance: {score:.0f}/100 (PERCLOS: {perclos:.2f})"
+                cv2.putText(
+                    frame, texte_score, (10, 155),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, couleur_score(score), 2,
                 )
 
             cv2.imshow("Surveillance de la vigilance - landmarks", frame)
