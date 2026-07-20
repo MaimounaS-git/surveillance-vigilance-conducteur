@@ -10,6 +10,7 @@ import cv2
 from calibration import calibrer
 from capture import Webcam
 from clignement import CompteurClignements
+from decision import Decision, NIVEAU_ALERTE, NIVEAU_ATTENTION
 from indicateurs import calculer_ear, calculer_mar
 from landmarks import DetecteurLandmarks
 from scoring import ScoreVigilance
@@ -22,6 +23,15 @@ def couleur_score(score):
     if score >= 40:
         return (0, 165, 255)
     return (0, 0, 255)
+
+
+def couleur_niveau(niveau):
+    """Couleur associée au niveau de vigilance (normal/attention/alerte)."""
+    if niveau == NIVEAU_ALERTE:
+        return (0, 0, 255)
+    if niveau == NIVEAU_ATTENTION:
+        return (0, 165, 255)
+    return (0, 255, 0)
 
 
 def dessiner_landmarks(frame, landmarks):
@@ -48,6 +58,7 @@ def main():
 
     compteur_clignements = CompteurClignements(seuil_ear=baseline.seuil_fermeture_yeux)
     score_vigilance = ScoreVigilance()
+    decision = Decision()
 
     temps_precedent = time.time()
 
@@ -72,6 +83,8 @@ def main():
                 score, perclos = score_vigilance.calculer_score(
                     ear, mar, compteur_clignements.frequence_par_minute(), baseline
                 )
+                yeux_fermes = ear < baseline.seuil_fermeture_yeux
+                niveau, microsommeil = decision.determiner_niveau(yeux_fermes, score)
 
             # Calcul du FPS pour valider la stabilité du pipeline avant le bloc suivant
             temps_actuel = time.time()
@@ -109,6 +122,16 @@ def main():
                     frame, texte_score, (10, 155),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, couleur_score(score), 2,
                 )
+                texte_niveau = f"Niveau: {niveau.upper()}"
+                cv2.putText(
+                    frame, texte_niveau, (10, 190),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, couleur_niveau(niveau), 2,
+                )
+                if microsommeil:
+                    cv2.putText(
+                        frame, "MICROSOMMEIL DETECTE (yeux fermes > 500ms)", (10, 225),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2,
+                    )
 
             cv2.imshow("Surveillance de la vigilance - landmarks", frame)
 
