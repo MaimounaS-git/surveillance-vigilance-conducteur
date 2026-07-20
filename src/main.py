@@ -7,6 +7,7 @@ import time
 
 import cv2
 
+from calibration import calibrer
 from capture import Webcam
 from clignement import CompteurClignements
 from indicateurs import calculer_ear, calculer_mar
@@ -26,7 +27,16 @@ def main():
     webcam = Webcam()
     webcam.ouvrir()
     detecteur = DetecteurLandmarks()
-    compteur_clignements = CompteurClignements()
+
+    baseline = calibrer(webcam, detecteur)
+    print(
+        f"Calibration terminée : EAR moyen={baseline.ear_moyen:.3f} "
+        f"(seuil clignement={baseline.seuil_fermeture_yeux:.3f}), "
+        f"MAR moyen={baseline.mar_moyen:.3f} "
+        f"(seuil baillement={baseline.seuil_baillement:.3f})"
+    )
+
+    compteur_clignements = CompteurClignements(seuil_ear=baseline.seuil_fermeture_yeux)
 
     temps_precedent = time.time()
 
@@ -71,6 +81,14 @@ def main():
                 cv2.putText(
                     frame, texte_clignements, (10, 90),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2,
+                )
+                texte_seuils = (
+                    f"Seuils personnalises -> clignement: {baseline.seuil_fermeture_yeux:.3f} "
+                    f"| baillement: {baseline.seuil_baillement:.3f}"
+                )
+                cv2.putText(
+                    frame, texte_seuils, (10, 120),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2,
                 )
 
             cv2.imshow("Surveillance de la vigilance - landmarks", frame)

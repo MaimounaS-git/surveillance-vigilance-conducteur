@@ -45,5 +45,16 @@ def calculer_ear(landmarks, largeur, hauteur):
 
 
 def calculer_mar(landmarks, largeur, hauteur):
-    """Calcule le MAR (ouverture de la bouche)."""
-    return _ratio_ouverture(landmarks, LANDMARKS_BOUCHE, largeur, hauteur)
+    """
+    Calcule le MAR (ouverture de la bouche) : une seule paire verticale
+    (lèvre haute / lèvre basse, au centre), contrairement à l'EAR qui utilise
+    deux paires. MAR = ||haut-bas|| / ||coin_gauche-coin_droit||
+    """
+    coin_gauche, coin_droit, haut, bas = [
+        _point_pixel(landmarks[i], largeur, hauteur) for i in LANDMARKS_BOUCHE
+    ]
+    distance_verticale = _distance(haut, bas)
+    distance_horizontale = _distance(coin_gauche, coin_droit)
+    if distance_horizontale == 0:
+        return 0.0
+    return distance_verticale / distance_horizontale
