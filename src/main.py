@@ -8,6 +8,7 @@ import time
 import cv2
 
 from capture import Webcam
+from clignement import CompteurClignements
 from indicateurs import calculer_ear, calculer_mar
 from landmarks import DetecteurLandmarks
 
@@ -25,6 +26,7 @@ def main():
     webcam = Webcam()
     webcam.ouvrir()
     detecteur = DetecteurLandmarks()
+    compteur_clignements = CompteurClignements()
 
     temps_precedent = time.time()
 
@@ -45,6 +47,7 @@ def main():
                 hauteur, largeur, _ = frame.shape
                 ear = calculer_ear(landmarks, largeur, hauteur)
                 mar = calculer_mar(landmarks, largeur, hauteur)
+                compteur_clignements.mettre_a_jour(ear)
 
             # Calcul du FPS pour valider la stabilité du pipeline avant le bloc suivant
             temps_actuel = time.time()
@@ -59,6 +62,14 @@ def main():
                 texte_indicateurs = f"EAR: {ear:.3f} | MAR: {mar:.3f}"
                 cv2.putText(
                     frame, texte_indicateurs, (10, 60),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2,
+                )
+                texte_clignements = (
+                    f"Clignements: {compteur_clignements.total_clignements} "
+                    f"| Frequence: {compteur_clignements.frequence_par_minute():.1f}/min"
+                )
+                cv2.putText(
+                    frame, texte_clignements, (10, 90),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2,
                 )
 
