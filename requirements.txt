@@ -3,3 +3,5 @@ mediapipe
 numpy
 pygame
 matplotlib
+pandas
+scikit-learn
