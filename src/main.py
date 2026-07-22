@@ -16,6 +16,7 @@ from historique import HistoriqueSession
 from indicateurs import calculer_ear, calculer_mar
 from landmarks import DetecteurLandmarks
 from scoring import ScoreVigilance
+from tete import DetecteurTeteBasse, estimer_orientation
 
 
 def couleur_score(score):
@@ -63,6 +64,7 @@ def main():
     decision = Decision()
     gestionnaire_alertes = GestionnaireAlertes()
     historique = HistoriqueSession()
+    detecteur_tete_basse = DetecteurTeteBasse()
 
     temps_precedent = time.time()
 
@@ -91,6 +93,12 @@ def main():
                 niveau, microsommeil = decision.determiner_niveau(yeux_fermes, score)
                 message_recommandation = gestionnaire_alertes.traiter(niveau)
                 historique.enregistrer(ear, mar, score)
+
+                orientation = estimer_orientation(landmarks, largeur, hauteur)
+                tete_basse = False
+                if orientation is not None:
+                    pitch, yaw, roll = orientation
+                    tete_basse = detecteur_tete_basse.mettre_a_jour(pitch)
 
             # Calcul du FPS pour valider la stabilité du pipeline avant le bloc suivant
             temps_actuel = time.time()
@@ -143,6 +151,17 @@ def main():
                         frame, message_recommandation, (10, 260),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, couleur_niveau(niveau), 2,
                     )
+                if orientation is not None:
+                    texte_orientation = f"Tete -> pitch: {pitch:.0f} | yaw: {yaw:.0f} | roll: {roll:.0f}"
+                    cv2.putText(
+                        frame, texte_orientation, (10, 295),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2,
+                    )
+                    if tete_basse:
+                        cv2.putText(
+                            frame, "TETE BASSE DETECTEE", (10, 330),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2,
+                        )
 
             cv2.imshow("Surveillance de la vigilance - landmarks", frame)
 
