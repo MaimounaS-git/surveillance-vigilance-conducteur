@@ -50,7 +50,7 @@ Ce projet doit rester réaliste pour une personne seuleisd, sans GPU ni moyens i
 | scikit-learn                          | Classifieur ML (logistic regression / SVM / random forest) sur indicateurs tabulaires |
 | pandas                                | Manipulation des données tabulaires (extraction dataset, features)                   |
 | SQLite (via`sqlite3` ou SQLAlchemy) | Stockage de l'historique des sessions                                                 |
-| Streamlit                             | Tableau de bord (vue temps réel + vue historique)                                    |
+| Dash (Plotly)                         | Tableau de bord (vue temps réel + vue historique) — décision du 2026-07-22, remplace Streamlit |
 | playsound / pygame (au choix)         | Alerte sonore                                                                         |
 
 ---
@@ -76,7 +76,7 @@ Ce projet doit rester réaliste pour une personne seuleisd, sans GPU ni moyens i
 - Orientation de la tête (pitch/yaw/roll via landmarks + `cv2.solvePnP`) → détection tête qui tombe / dodeline.
 - Direction du regard (optionnel si le temps le permet).
 - Base de données SQLite : historique multi-sessions.
-- Tableau de bord Streamlit avec vue temps réel + vue historique.
+- Tableau de bord Dash avec vue temps réel + vue historique.
 - Recommandations textuelles contextuelles ("Une pause est recommandée").
 - Export CSV d'une session.
 
@@ -103,7 +103,7 @@ Webcam → OpenCV (lecture frames)
        → Module de décision (lissage temporel, niveaux normal/attention/alerte)
        → Module d'alerte (son + visuel + recommandation)
        → SQLite (historique de session)
-       → Streamlit (dashboard temps réel + historique)
+       → Dash (dashboard temps réel + historique)
 ```
 
 Développer et tester chaque bloc indépendamment avant de passer au suivant — toujours garder un état fonctionnel démontrable.
@@ -195,7 +195,7 @@ Adapter librement selon les besoins, mais garder une séparation claire session 
 
 ---
 
-## 9. Tableau de bord (Streamlit)
+## 9. Tableau de bord (Dash)
 
 **Vue en direct** :
 
@@ -266,7 +266,7 @@ Pour la démo devant jury : utiliser une vidéo de l'utilisatrice elle-même (we
   scoring.py
   alertes.py
   database.py
-  dashboard.py        # app Streamlit
+  dashboard.py        # app Dash
   ml/
     train_classifier.py
     features.py
