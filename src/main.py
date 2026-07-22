@@ -4,6 +4,7 @@ du visage. Premier bloc du pipeline (cf. claude.md, section 5).
 """
 
 import time
+from datetime import datetime
 
 import cv2
 
@@ -11,6 +12,7 @@ from alertes import GestionnaireAlertes
 from calibration import calibrer
 from capture import Webcam
 from clignement import CompteurClignements
+from database import BaseDeDonnees
 from decision import Decision, NIVEAU_ALERTE, NIVEAU_ATTENTION
 from historique import HistoriqueSession
 from indicateurs import calculer_ear, calculer_mar
@@ -66,6 +68,13 @@ def main():
     historique = HistoriqueSession()
     detecteur_tete_basse = DetecteurTeteBasse()
 
+    bdd = BaseDeDonnees()
+    session_id = bdd.creer_session(date=datetime.now().isoformat(timespec="seconds"))
+    instant_debut_session = time.time()
+    somme_scores, nb_mesures = 0.0, 0
+    nb_alertes_session, nb_baillements_session = 0, 0
+    alerte_precedente, baillement_precedent = False, False
+
     temps_precedent = time.time()
 
     try:
@@ -97,6 +106,19 @@ def main():
                 signes_actuels = yeux_fermes or microsommeil or baillement
                 message_recommandation = gestionnaire_alertes.traiter(niveau, signes_actuels)
                 historique.enregistrer(ear, mar, score)
+
+                bdd.ajouter_mesure(
+                    session_id, time.time() - instant_debut_session, ear, mar, score,
+                    niveau == NIVEAU_ALERTE,
+                )
+                somme_scores += score
+                nb_mesures += 1
+                if niveau == NIVEAU_ALERTE and not alerte_precedente:
+                    nb_alertes_session += 1
+                alerte_precedente = niveau == NIVEAU_ALERTE
+                if baillement and not baillement_precedent:
+                    nb_baillements_session += 1
+                baillement_precedent = baillement
 
                 orientation = estimer_orientation(landmarks, largeur, hauteur)
                 tete_basse = False
@@ -181,6 +203,15 @@ def main():
         webcam.fermer()
         detecteur.fermer()
         cv2.destroyAllWindows()
+
+    duree_secondes = time.time() - instant_debut_session
+    score_moyen = somme_scores / nb_mesures if nb_mesures > 0 else 0.0
+    bdd.mettre_a_jour_session(
+        session_id, duree_secondes, score_moyen,
+        nb_alertes_session, nb_baillements_session, compteur_clignements.total_clignements,
+    )
+    bdd.fermer()
+    print(f"Session enregistrée en base (id={session_id}).")
 
     historique.afficher_courbes()
 
