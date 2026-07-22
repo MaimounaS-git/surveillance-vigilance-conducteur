@@ -33,11 +33,16 @@ class Baseline:
         self.seuil_baillement = mar_moyen + MARGE_SEUIL_BAILLEMENT
 
 
-def calibrer(webcam, detecteur, duree_secondes=DUREE_CALIBRATION_SECONDES):
+def calibrer(webcam, detecteur, duree_secondes=DUREE_CALIBRATION_SECONDES, sur_frame=None):
     """
     Exécute la phase de calibration : affiche une consigne à l'écran pendant
     `duree_secondes`, collecte l'EAR/MAR à chaque frame où un visage est
     détecté, puis retourne une Baseline calculée à partir des moyennes.
+
+    Si `sur_frame` est fourni, il est appelé à chaque frame avec
+    (frame, temps_restant) au lieu d'ouvrir une fenêtre OpenCV — utilisé par
+    dashboard.py pour afficher la calibration dans le flux vidéo web plutôt
+    que dans une fenêtre séparée.
     """
     valeurs_ear = []
     valeurs_mar = []
@@ -67,8 +72,12 @@ def calibrer(webcam, detecteur, duree_secondes=DUREE_CALIBRATION_SECONDES):
             f"visage neutre ({temps_restant:.0f}s)"
         )
         cv2.putText(frame, texte, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-        cv2.imshow("Surveillance de la vigilance - landmarks", frame)
-        cv2.waitKey(1)
+
+        if sur_frame is not None:
+            sur_frame(frame, temps_restant)
+        else:
+            cv2.imshow("Surveillance de la vigilance - landmarks", frame)
+            cv2.waitKey(1)
 
     if not valeurs_ear:
         raise RuntimeError("Calibration échouée : aucun visage détecté pendant la calibration.")

@@ -101,7 +101,7 @@ def main():
                 yeux_fermes = ear < baseline.seuil_fermeture_yeux
                 bouche_ouverte = mar > baseline.seuil_baillement
                 niveau, microsommeil, baillement = decision.determiner_niveau(
-                    yeux_fermes, bouche_ouverte, score
+                    yeux_fermes, bouche_ouverte, mar, score
                 )
                 signes_actuels = yeux_fermes or microsommeil or baillement
                 message_recommandation = gestionnaire_alertes.traiter(niveau, signes_actuels)
@@ -174,7 +174,7 @@ def main():
                     )
                 if baillement:
                     cv2.putText(
-                        frame, "BAILLEMENT DETECTE (bouche ouverte > 1s)", (10, 260),
+                        frame, "BAILLEMENT DETECTE (ouverture progressive > 2s)", (10, 260),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 165, 255), 2,
                     )
                 if message_recommandation:
