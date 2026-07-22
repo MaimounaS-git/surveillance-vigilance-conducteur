@@ -90,8 +90,12 @@ def main():
                     ear, mar, compteur_clignements.frequence_par_minute(), baseline
                 )
                 yeux_fermes = ear < baseline.seuil_fermeture_yeux
-                niveau, microsommeil = decision.determiner_niveau(yeux_fermes, score)
-                message_recommandation = gestionnaire_alertes.traiter(niveau)
+                bouche_ouverte = mar > baseline.seuil_baillement
+                niveau, microsommeil, baillement = decision.determiner_niveau(
+                    yeux_fermes, bouche_ouverte, score
+                )
+                signes_actuels = yeux_fermes or microsommeil or baillement
+                message_recommandation = gestionnaire_alertes.traiter(niveau, signes_actuels)
                 historique.enregistrer(ear, mar, score)
 
                 orientation = estimer_orientation(landmarks, largeur, hauteur)
@@ -146,20 +150,25 @@ def main():
                         frame, "MICROSOMMEIL DETECTE (yeux fermes > 500ms)", (10, 225),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2,
                     )
+                if baillement:
+                    cv2.putText(
+                        frame, "BAILLEMENT DETECTE (bouche ouverte > 1s)", (10, 260),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 165, 255), 2,
+                    )
                 if message_recommandation:
                     cv2.putText(
-                        frame, message_recommandation, (10, 260),
+                        frame, message_recommandation, (10, 295),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, couleur_niveau(niveau), 2,
                     )
                 if orientation is not None:
                     texte_orientation = f"Tete -> pitch: {pitch:.0f} | yaw: {yaw:.0f} | roll: {roll:.0f}"
                     cv2.putText(
-                        frame, texte_orientation, (10, 295),
+                        frame, texte_orientation, (10, 330),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2,
                     )
                     if tete_basse:
                         cv2.putText(
-                            frame, "TETE BASSE DETECTEE", (10, 330),
+                            frame, "TETE BASSE DETECTEE", (10, 365),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2,
                         )
 

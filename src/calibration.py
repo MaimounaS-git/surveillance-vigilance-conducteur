@@ -14,7 +14,13 @@ from indicateurs import calculer_ear, calculer_mar
 
 DUREE_CALIBRATION_SECONDES = 10
 RATIO_SEUIL_FERMETURE_YEUX = 0.90  # seuil de fermeture = 90% de l'EAR baseline
-RATIO_SEUIL_BAILLEMENT = 1.40  # seuil de bâillement = 140% du MAR baseline
+
+# Le MAR bouche fermée est proche de 0 (souvent ~0.02-0.04), donc un seuil en
+# pourcentage de la baseline (ex. 140%, valeur de littérature) reste lui aussi
+# proche de 0 et se déclenche au moindre mouvement de bouche. Une marge fixe
+# ajoutée à la baseline est plus stable dans ce cas (ajustée empiriquement :
+# mouvement de bouche normal observé ~0.16, vrai bâillement ~0.96).
+MARGE_SEUIL_BAILLEMENT = 0.3
 
 
 class Baseline:
@@ -24,7 +30,7 @@ class Baseline:
         self.ear_moyen = ear_moyen
         self.mar_moyen = mar_moyen
         self.seuil_fermeture_yeux = ear_moyen * RATIO_SEUIL_FERMETURE_YEUX
-        self.seuil_baillement = mar_moyen * RATIO_SEUIL_BAILLEMENT
+        self.seuil_baillement = mar_moyen + MARGE_SEUIL_BAILLEMENT
 
 
 def calibrer(webcam, detecteur, duree_secondes=DUREE_CALIBRATION_SECONDES):

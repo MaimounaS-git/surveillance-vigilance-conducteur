@@ -42,15 +42,22 @@ class GestionnaireAlertes:
         self.son_alerte = _generer_bip(frequence_hz=990, duree_secondes=0.4, volume=0.6)
         self.dernier_son_instant = 0.0
 
-    def traiter(self, niveau, instant=None):
+    def traiter(self, niveau, signes_actuels, instant=None):
         """
         Joue le son d'alerte correspondant (au maximum une fois toutes les
         `INTERVALLE_MIN_ALERTE_SECONDES`) et retourne le message de
         recommandation associé (ou None si niveau normal).
+
+        `signes_actuels` reflète l'état de la frame en cours (yeux fermés,
+        microsommeil ou bâillement en cours) : le score de vigilance étant
+        lissé sur une fenêtre glissante (PERCLOS), il reste bas un moment
+        après un épisode de fatigue même si la personne est redevenue
+        normale. Sans ce paramètre, l'alarme continuerait à se répéter
+        alors que la situation est déjà revenue à la normale.
         """
         instant = instant if instant is not None else time.time()
 
-        if niveau == NIVEAU_NORMAL:
+        if niveau == NIVEAU_NORMAL or not signes_actuels:
             return None
 
         if instant - self.dernier_son_instant >= INTERVALLE_MIN_ALERTE_SECONDES:
